@@ -1,0 +1,25 @@
+2026-07-06 18:03:47,592 - INFO - Connected to the database successfully.
+2026-07-06 18:03:47,592 - INFO - Creating vendor summary table by merging the different tables and adding new columns.
+2026-07-06 18:05:53,315 - INFO - Vendor summary table created successfully.
+2026-07-06 18:05:53,315 - INFO -    VendorNumber                   VendorName  Brand  ... TotalSalesPrice  TotalExciseTax  FreightCost
+0          1128  BROWN-FORMAN CORP             1233  ...       672819.31       260999.20     68601.68
+1          4425        MARTIGNETTI COMPANIES   3405  ...       561512.37       294438.66    144929.24
+2         17035  PERNOD RICARD USA             8068  ...       461140.15       343854.07    123780.22
+3          3960  DIAGEO NORTH AMERICA INC      4261  ...       420050.01       368242.80    257032.07
+4          3960  DIAGEO NORTH AMERICA INC      3545  ...       545778.28       249587.83    257032.07
+
+[5 rows x 14 columns]
+2026-07-06 18:05:53,582 - INFO - Cleaning the data...
+2026-07-06 18:05:53,672 - INFO - Data cleaned successfully.
+2026-07-06 18:05:53,672 - INFO - Adding calculated columns...
+2026-07-06 18:05:53,687 - INFO - Calculated columns added successfully.
+2026-07-06 18:05:53,694 - INFO -    VendorNumber                VendorName  Brand  ... ProfitMargin  StockTurnover  SalesToPurchaseRatio
+0          1128         BROWN-FORMAN CORP   1233  ...    25.297693       0.979108              1.338647
+1          4425     MARTIGNETTI COMPANIES   3405  ...    21.062810       0.976890              1.266830
+2         17035         PERNOD RICARD USA   8068  ...    24.675786       0.998575              1.327594
+3          3960  DIAGEO NORTH AMERICA INC   4261  ...    27.139908       0.993703              1.372493
+4          3960  DIAGEO NORTH AMERICA INC   3545  ...    28.412764       0.983556              1.396897
+
+[5 rows x 18 columns]
+2026-07-06 18:05:53,768 - INFO - Final data prepared successfully and started saving to the database.
+2026-07-06 18:05:54,297 - INFO - Final data saved to the database successfully.

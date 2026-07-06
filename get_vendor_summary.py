@@ -1,76 +1,161 @@
 import pandas as pd
 import sqlite3
-import logging
-import os
-from ingestion_db import ingest_df
 from pathlib import Path
 
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(parents=True, exist_ok=True)
-LOG_FILE = LOG_DIR / "get_vendor_summary.log"
+from ingestion_db import ingest_df
+from logger_setup import get_logger
 
-logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s',filemode='a')
+logger = get_logger("vendor_summary")
+
 
 def create_vendor_summary(conn):
+    """Merge tables and create vendor summary."""
 
-    ''' this function will merge the diffrent tables and create a vendor summary table by adding new columns and save it to the database'''
-    
-    logging.info('Creating vendor summary table by merging the different tables and adding new columns.')
-    sql_path = Path("SQL_QUERY/vendor_summary.sql")
-    
-    with open(sql_path, 'r', encoding='utf-8') as file:
-        query = file.read()
+    try:
+        logger.info("Creating vendor summary table...")
 
-    vendor_sales_summary = pd.read_sql_query(query, conn)
-    logging.info('Vendor summary table created successfully.')
-    return vendor_sales_summary
+        sql_path = Path("SQL_QUERY/vendor_summary.sql")
+
+        with open(sql_path, 'r', encoding='utf-8') as file:
+            query = file.read()
+
+        vendor_sales_summary = pd.read_sql_query(query, conn)
+
+        logger.info(
+            f"Vendor summary created successfully. Shape: {vendor_sales_summary.shape}"
+        )
+
+        return vendor_sales_summary
+
+    except FileNotFoundError:
+        logger.exception("SQL file not found.")
+        raise
+
+    except Exception:
+        logger.exception("Error while creating vendor summary.")
+        raise
+
 
 def clean_data(df):
-    ''' this function will clean the data by changing data types and handling missing values'''
-    logging.info('Cleaning the data...')
+    """Clean the dataframe."""
 
-    # changing data types
-    df['Volume'] = df['Volume'].astype('float64')
+    try:
+        logger.info("Cleaning data...")
 
-    # Handle missing values
-    df.fillna(0, inplace=True)
+        # Change datatype
+        df['Volume'] = df['Volume'].astype('float64')
 
-    # removing unnecessary spaces from catagorical columns
-    df['VendorName'] = df['VendorName'].str.strip()
-    df['Description'] = df['Description'].str.strip()
-    logging.info('Data cleaned successfully.')
-    return df
+        # Handle missing values
+        df.fillna(0, inplace=True)
+
+        # Remove extra spaces
+        df['VendorName'] = df['VendorName'].str.strip()
+        df['Description'] = df['Description'].str.strip()
+
+        logger.info("Data cleaned successfully.")
+
+        return df
+
+    except KeyError:
+        logger.exception("Required columns missing during cleaning.")
+        raise
+
+    except Exception:
+        logger.exception("Unexpected error during cleaning.")
+        raise
+
 
 def add_calculated_columns(df):
-    ''' this function will add calculated columns to the dataframe'''
-    logging.info('Adding calculated columns...')
-    # adding new columns
-    df['GrossProfit'] = (df['TotalSalesDollars'] - df['TotalPurchaseDollars']) 
-    df['ProfitMargin'] = (df['GrossProfit'] / df['TotalSalesDollars']) * 100
-    df['StockTurnover'] = df['TotalSalesQuantity'] / df['TotalPurchaseQuantity']
-    df['SalesToPurchaseRatio'] = df['TotalSalesDollars'] / df['TotalPurchaseDollars']
-    logging.info('Calculated columns added successfully.')
+    """Add calculated columns."""
 
-    return df
+    try:
+        logger.info("Adding calculated columns...")
+
+        required_cols = [
+            'TotalSalesDollars',
+            'TotalPurchaseDollars',
+            'TotalSalesQuantity',
+            'TotalPurchaseQuantity'
+        ]
+
+        missing_cols = [
+            col for col in required_cols
+            if col not in df.columns
+        ]
+
+        if missing_cols:
+            raise KeyError(
+                f"Missing columns: {missing_cols}"
+            )
+
+        df['GrossProfit'] = (
+            df['TotalSalesDollars']
+            - df['TotalPurchaseDollars']
+        )
+
+        df['ProfitMargin'] = (
+            df['GrossProfit']
+            / df['TotalSalesDollars']
+        ) * 100
+
+        df['StockTurnover'] = (
+            df['TotalSalesQuantity']
+            / df['TotalPurchaseQuantity']
+        )
+
+        df['SalesToPurchaseRatio'] = (
+            df['TotalSalesDollars']
+            / df['TotalPurchaseDollars']
+        )
+
+        logger.info("Calculated columns added successfully.")
+
+        return df
+
+    except Exception:
+        logger.exception(
+            "Error while adding calculated columns."
+        )
+        raise
 
 
 if __name__ == "__main__":
 
-    conn = sqlite3.connect('inventory.db')
-    logging.info('Connected to the database successfully.')
-    print('Connected to the database successfully.')
+    conn = None
 
-    summary_df = create_vendor_summary(conn)
-    logging.info(summary_df.head())
-    print('Vendor summary table created successfully.')
+    try:
+        conn = sqlite3.connect("inventory.db")
 
-    cleaned_data = clean_data(summary_df)
+        logger.info("Connected to database.")
+        print("Connected successfully.")
 
-    final_data = add_calculated_columns(cleaned_data)
-    logging.info(final_data.head())
-    print('Final data prepared successfully.')
+        summary_df = create_vendor_summary(conn)
 
-    logging.info('Final data prepared successfully and started saving to the database.')
-    ingest_df(final_data,'vendor_sales_summary', conn,mode='replace')
-    logging.info('Final data saved to the database successfully.')
-    print('Final data saved to the database successfully.')
+        cleaned_df = clean_data(summary_df)
+
+        final_df = add_calculated_columns(cleaned_df)
+
+        logger.info(
+            f"Final dataframe shape: {final_df.shape}"
+        )
+
+        ingest_df(
+            final_df,
+            'vendor_sales_summary',
+            conn,
+            mode='replace'
+        )
+
+        logger.info("Data saved successfully.")
+        print("Data saved successfully.")
+
+    except Exception:
+        logger.exception(
+            "Pipeline execution failed."
+        )
+        print("Pipeline failed. Check logs.")
+
+    finally:
+        if conn:
+            conn.close()
+            logger.info("Database connection closed.")

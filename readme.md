@@ -91,34 +91,44 @@ Insights & Reporting
 
 ### Top Vendors and Brands
 
-
-![Top Vendors and Brands](screenshots/Top Vendors and Brands.jpg)
+![Top Vendors and Brands](screenshots/Top Vendor and Brands.jpg)
 
 ---
 
 ### Correlation Heatmap
 
-
-![Correlation](screenshots/correlation.jpg)
+![Correlation Heatmap](screenshots/Correlation.jpg)
 
 ---
 
+### Bulk Purchasing Insights
 
-### Business Insights Visualization
+![Bulk Purchasing Insights](screenshots/Bulk Purchasing Insights.jpg)
 
+---
 
-![Bulk Purhasing Insights](screenshots/ Bulk Purchasing Insights.jpg)
-
+### Top Vendors Purchase contribution
 
 ![Donut Chart](screenshots/Donut Chart.jpg)
 
+---
 
-![Paretto Chart](screenshots/Paretto Chart.jpg)
+### Vendor Contribution to total Purchases
 
-
-![Brands for promotion](screenshots/Brands for promotion and sale.jpg)
+![Pareto Chart](screenshots/Pareto chart.jpg)
 
 ---
+
+### Brands for Promotion and Sales
+
+![Brands for Promotion and Sales](screenshots/Brands for promotion and sale.jpg)
+
+---
+
+### Confidence Interval Analysis
+
+![Confidence Interval](screenshots/Confidence Interval.jpg)
+
 
 
 ## Key Findings
